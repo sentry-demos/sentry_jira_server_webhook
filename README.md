@@ -1,7 +1,7 @@
 # sentry_jira_server_webhook
 
-Creating Internal Integration in Sentry
-1) Go to Oraganization Settings -> Developer Settings, click on "Create New Integration"
+Creating Internal Integration in Sentry:
+1) Go to Organization Settings -> Developer Settings, click on "Create New Integration"
 2) Give it any name you want
 3) Webhook URL should point to your Flask server (main.py)
 4) Turn on the Alert Rule Action
@@ -16,14 +16,18 @@ Creating Internal Integration in Sentry
 
 Setting up the webhook environment:
 
-1) Commands for installing Flask:
-    1.1) python3 -m venv venv
-    1.2) . venv/bin/activate
-    1.3) pip install Flask
-2) Command for installing JIRA Python SDK:
-    2.1) pip install jira
+Commands for installing Flask:
+a) python3 -m venv venv
+b) . venv/bin/activate
+c) pip install Flask
 
-3) Command for starting the Flask server:
+Command for installing JIRA Python SDK:
+pip install jira
+
+Before you start the Flask server make sure to run:
+. venv/bin/activate
+
+Command for starting the Flask server:
 flask --app main run
 
 
