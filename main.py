@@ -9,12 +9,12 @@ import hmac
 
 app = Flask(__name__)
 
-JIRA_PROJECT_NAME = 'YUV'
-JIRA_USERNAME = 'yuval'
-JIRA_PASSWORD = 'jira123'
-JIRA_SERVER_URL = 'http://localhost:8080'
-SENTRY_CLIENT_SECRET = 'ea51effb5a54466a93996ac0128c94df35859e5c66534daab7ce273dff18577d'
-SENTRY_AUTH_TOKEN = '26953a0fb8a646f294a04f93cce6b444417682be27384d769bd30ab93f3a172a'
+JIRA_PROJECT_NAME = '' #Your JIRA project name
+JIRA_USERNAME = '' #Your JIRA username
+JIRA_PASSWORD = '' #Your JIRA password
+JIRA_SERVER_URL = '' #Your JIRA server URL
+SENTRY_CLIENT_SECRET = '' #Client secret key is provided in the internal integration page in Sentry
+SENTRY_AUTH_TOKEN = '' #Sentry auth token is provided in the internal integration page in Sentry
 SENTRY_EXTERNAL_ISSUE_API = 'https://sentry.io/api/0/sentry-app-installations/'
 SENTRY_UPDATE_ISSUE_API = 'https://sentry.io/api/0/issues/'
 headers = {
@@ -53,7 +53,7 @@ def update_sentry():
     print("Incoming request from JIRA server")
     payload = request.json
     #print(payload)
-    if payload['issue']['fields']['status']['name'] == "Done":
+    if payload['issue']['fields']['status']['name'] == "Done": #Marking the issue as Done in JIRA will resolve the issue in Sentry
         status = "resolved"
         issue_id = payload['issue']['fields']['labels'][0]
         data = json.dumps({
@@ -66,7 +66,7 @@ def update_sentry():
         response = requests.request("PUT", api_endpoint, headers=headers, data=data)
         print(response)
     
-    elif payload['issue']['fields']['status']['name'] == "To Do":
+    elif payload['issue']['fields']['status']['name'] == "To Do": #Marking the issue as To Do in JIRA will unresolved the issue in Sentry
         status = "unresolved"
         issue_id = payload['issue']['fields']['labels'][0]
         data = json.dumps({
@@ -83,7 +83,7 @@ def update_sentry():
     
 
 
-@app.route('/', methods=['POST']) #Webhook for incoming request from Sentry
+@app.route('/', methods=['POST']) #Webhook for incoming requests from Sentry
 def webhook():
     payload = request.json
     #print(payload)
@@ -100,6 +100,7 @@ def webhook():
         issue_id = data['event']['issue_id']
         createExternalIssue(issue_id, externalWebUrl, JIRA_PROJECT_NAME, new_issue.key, sentry_integration_uuid)
 
+    #Metric Alert payload object: https://docs.sentry.io/product/integrations/integration-platform/webhooks/metric-alerts/
     elif action == 'critical': #Critical metric alert has been triggered in Sentry
         print("Critical metric alert has been triggered in Sentry")
         # TODO: Your logic
@@ -112,6 +113,7 @@ def webhook():
         print("Metric alert has been resolved in Sentry")
         # TODO: Your logic
 
+    #Issue payload object: https://docs.sentry.io/product/integrations/integration-platform/webhooks/issues/
     elif action == 'resolved' and 'issue' in data: #ISSUE has been resolved in Sentry
         print("ISSUE has been resolved in Sentry")
         # TODO: Your logic
@@ -128,6 +130,7 @@ def webhook():
 
 
 def createIssueTicket(data):
+    #Issue Alert payload object specs: https://docs.sentry.io/product/integrations/integration-platform/webhooks/issue-alerts/
     web_url = data['event']['web_url']
     description = "Sentry link: " + web_url.split("events")[0] + "?referrer=jira_integration"
     error_values = data['event']['exception']['values'][0]
@@ -154,6 +157,7 @@ def createIssueTicket(data):
 
 
 def createExternalIssue(issueId, webUrl, project, identifier, sentry_integration_uuid):
+    #Linking the JIRA ticket to a Sentry issue: https://docs.sentry.io/api/integration/create-an-external-issue/
     print(issueId)
     payload = json.dumps({
         "issueId": issueId,
