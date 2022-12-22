@@ -17,18 +17,30 @@ Creating Internal Integration in Sentry:
 Setting up the webhook environment:
 
 Commands for installing Flask:
-1) python3 -m venv venv
-2) . venv/bin/activate
-3) pip install Flask
+```
+python3 -m venv venv
+```
+```
+. venv/bin/activate
+```
+```
+pip install Flask
+```
 
 Command for installing JIRA Python SDK:
+```
 pip install jira
+```
 
 Before you start the Flask server make sure to run:
+```
 . venv/bin/activate
+```
 
 Command for starting the Flask server:
+```
 flask --app main run
+```
 
 
 
