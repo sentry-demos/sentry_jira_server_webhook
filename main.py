@@ -15,8 +15,7 @@ JIRA_PASSWORD = 'jira123'
 JIRA_SERVER_URL = 'http://localhost:8080'
 SENTRY_CLIENT_SECRET = 'ea51effb5a54466a93996ac0128c94df35859e5c66534daab7ce273dff18577d'
 SENTRY_AUTH_TOKEN = '26953a0fb8a646f294a04f93cce6b444417682be27384d769bd30ab93f3a172a'
-SENTRY_INTEGRATION_UUID = '7fc3a529-620a-4a0c-973a-8128a33e1d83' #Should be obtained dynamically
-SENTRY_ENTERNAL_ISSUE_API = 'https://sentry.io/api/0/sentry-app-installations/' + SENTRY_INTEGRATION_UUID + '/external-issues/'
+SENTRY_EXTERNAL_ISSUE_API = 'https://sentry.io/api/0/sentry-app-installations/'
 SENTRY_UPDATE_ISSUE_API = 'https://sentry.io/api/0/issues/'
 headers = {
     'Content-Type': 'application/json',
@@ -66,25 +65,40 @@ def update_sentry():
         print(api_endpoint)
         response = requests.request("PUT", api_endpoint, headers=headers, data=data)
         print(response)
-        return ("", 200, None)
+    
+    elif payload['issue']['fields']['status']['name'] == "To Do":
+        status = "unresolved"
+        issue_id = payload['issue']['fields']['labels'][0]
+        data = json.dumps({
+            "issueId": issue_id,
+            "status": status
+        })
+        print(data)
+        api_endpoint = SENTRY_UPDATE_ISSUE_API + issue_id + '/'
+        print(api_endpoint)
+        response = requests.request("PUT", api_endpoint, headers=headers, data=data)
+        print(response)
+
+    return ("", 200, None)
     
 
 
 @app.route('/', methods=['POST']) #Webhook for incoming request from Sentry
 def webhook():
-    authenticate(request)
     payload = request.json
     #print(payload)
+    authenticate(request)
     action = payload['action']
     data = payload['data']
     print(action)
-
+    sentry_integration_uuid = payload['installation']['uuid']
+    print(sentry_integration_uuid)
     if action == 'triggered': #Issue alert has been triggered in Sentry
         print("Issue alert has been triggered in Sentry")
         new_issue = createIssueTicket(data)
         externalWebUrl = JIRA_SERVER_URL + '/browse/' + new_issue.key
         issue_id = data['event']['issue_id']
-        createExternalIssue(issue_id, externalWebUrl, JIRA_PROJECT_NAME, new_issue.key)
+        createExternalIssue(issue_id, externalWebUrl, JIRA_PROJECT_NAME, new_issue.key, sentry_integration_uuid)
 
     elif action == 'critical': #Critical metric alert has been triggered in Sentry
         print("Critical metric alert has been triggered in Sentry")
@@ -139,7 +153,7 @@ def createIssueTicket(data):
 
 
 
-def createExternalIssue(issueId, webUrl, project, identifier):
+def createExternalIssue(issueId, webUrl, project, identifier, sentry_integration_uuid):
     print(issueId)
     payload = json.dumps({
         "issueId": issueId,
@@ -147,7 +161,9 @@ def createExternalIssue(issueId, webUrl, project, identifier):
         "project": project,
         "identifier": identifier
     })
-    response = requests.request("POST", SENTRY_ENTERNAL_ISSUE_API, headers=headers, data=payload)
+    api_endpoint = SENTRY_EXTERNAL_ISSUE_API + sentry_integration_uuid + '/external-issues/'
+    print(api_endpoint)
+    response = requests.request("POST", api_endpoint, headers=headers, data=payload)
     print(response.text)
     return response
 
