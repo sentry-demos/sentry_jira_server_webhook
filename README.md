@@ -43,4 +43,5 @@ flask --app main run
 ```
 
 
+<img width="846" alt="Screenshot 2023-06-02 at 9 20 41 AM" src="https://github.com/sentry-demos/sentry_jira_server_webhook/assets/89414234/497f42f7-7704-4b5b-816f-1d6dfd116c8d">
 
