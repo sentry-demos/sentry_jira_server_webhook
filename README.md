@@ -42,4 +42,6 @@ Command for starting the Flask server:
 flask --app main run
 ```
 
+![Jira Server Integration chart](https://github.com/sentry-demos/sentry_jira_server_webhook/assets/89414234/a1ad5c96-a23e-4664-a487-90a08ddd89c1)
+
 
